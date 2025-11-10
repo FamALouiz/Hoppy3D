@@ -937,24 +937,16 @@ void Game3D::drawWalls()
 
     CameraMode camMode = camera->getMode();
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // Back wall (transparent in front view)
-    glPushMatrix();
-    if (camMode == CAM_FRONT)
+    // Back wall (don't draw in front view, but collision still works)
+    if (camMode != CAM_FRONT)
     {
-        glEnable(GL_BLEND);
-        glColor4f(0.4f, 0.3f, 0.25f, 0.15f);
-    }
-    else
-    {
+        glPushMatrix();
         glColor3f(0.4f, 0.3f, 0.25f);
+        glTranslatef(0, wallHeight / 2, -5);
+        glScalef(10.0f, wallHeight, wallThickness);
+        glutSolidCube(1.0);
+        glPopMatrix();
     }
-    glTranslatef(0, wallHeight / 2, -5);
-    glScalef(10.0f, wallHeight, wallThickness);
-    glutSolidCube(1.0);
-    glPopMatrix();
 
     // Left wall
     glPushMatrix();
@@ -964,21 +956,16 @@ void Game3D::drawWalls()
     glutSolidCube(1.0);
     glPopMatrix();
 
-    // Right wall (transparent in side view)
-    glPushMatrix();
-    if (camMode == CAM_SIDE)
+    // Right wall (don't draw in side view, but collision still works)
+    if (camMode != CAM_SIDE)
     {
-        glEnable(GL_BLEND);
-        glColor4f(0.4f, 0.3f, 0.25f, 0.15f);
-    }
-    else
-    {
+        glPushMatrix();
         glColor3f(0.4f, 0.3f, 0.25f);
+        glTranslatef(5, wallHeight / 2, 0);
+        glScalef(wallThickness, wallHeight, 10.0f);
+        glutSolidCube(1.0);
+        glPopMatrix();
     }
-    glTranslatef(5, wallHeight / 2, 0);
-    glScalef(wallThickness, wallHeight, 10.0f);
-    glutSolidCube(1.0);
-    glPopMatrix();
 
     // Front wall
     glPushMatrix();
@@ -987,8 +974,6 @@ void Game3D::drawWalls()
     glScalef(10.0f, wallHeight, wallThickness);
     glutSolidCube(1.0);
     glPopMatrix();
-
-    glDisable(GL_BLEND);
 }
 
 void Game3D::draw()

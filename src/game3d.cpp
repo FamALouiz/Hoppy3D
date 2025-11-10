@@ -577,7 +577,7 @@ void Camera3D::apply()
     }
     else if (mode == CAM_FRONT)
     {
-        position = Vector3(0, 3, 12);
+        position = Vector3(0, 3, -12);
         lookAt = Vector3(0, 1, 0);
         up = Vector3(0, 1, 0);
     }
@@ -932,13 +932,25 @@ void Game3D::drawGround()
 
 void Game3D::drawWalls()
 {
-    // 3 bounding walls (using 4 for complete enclosure)
     float wallHeight = 2.0f;
     float wallThickness = 0.2f;
 
-    // Back wall
+    CameraMode camMode = camera->getMode();
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Back wall (transparent in front view)
     glPushMatrix();
-    glColor3f(0.4f, 0.3f, 0.25f);
+    if (camMode == CAM_FRONT)
+    {
+        glEnable(GL_BLEND);
+        glColor4f(0.4f, 0.3f, 0.25f, 0.15f);
+    }
+    else
+    {
+        glColor3f(0.4f, 0.3f, 0.25f);
+    }
     glTranslatef(0, wallHeight / 2, -5);
     glScalef(10.0f, wallHeight, wallThickness);
     glutSolidCube(1.0);
@@ -952,21 +964,31 @@ void Game3D::drawWalls()
     glutSolidCube(1.0);
     glPopMatrix();
 
-    // Right wall
+    // Right wall (transparent in side view)
     glPushMatrix();
-    glColor3f(0.4f, 0.3f, 0.25f);
+    if (camMode == CAM_SIDE)
+    {
+        glEnable(GL_BLEND);
+        glColor4f(0.4f, 0.3f, 0.25f, 0.15f);
+    }
+    else
+    {
+        glColor3f(0.4f, 0.3f, 0.25f);
+    }
     glTranslatef(5, wallHeight / 2, 0);
     glScalef(wallThickness, wallHeight, 10.0f);
     glutSolidCube(1.0);
     glPopMatrix();
 
-    // Front wall (optional, for complete enclosure)
+    // Front wall
     glPushMatrix();
     glColor3f(0.4f, 0.3f, 0.25f);
     glTranslatef(0, wallHeight / 2, 5);
     glScalef(10.0f, wallHeight, wallThickness);
     glutSolidCube(1.0);
     glPopMatrix();
+
+    glDisable(GL_BLEND);
 }
 
 void Game3D::draw()

@@ -703,7 +703,7 @@ void Camera3D::followPlayer(Vector3 playerPos)
 Game3D *Game3D::instance = nullptr;
 
 Game3D::Game3D() : player(nullptr), camera(nullptr), gameState(STATE_PLAYING),
-                   gameTime(0), maxGameTime(120.0f)
+                   gameTime(0), maxGameTime(120.0f), musicEnabled(true)
 {
     for (int i = 0; i < 4; i++)
     {
@@ -731,6 +731,7 @@ void Game3D::destroy()
 {
     if (instance)
     {
+        instance->stopBackgroundMusic();
         delete instance->player;
         for (auto p : instance->platforms)
             delete p;
@@ -757,6 +758,8 @@ void Game3D::init()
 
     gameState = STATE_PLAYING;
     gameTime = 0;
+
+    playBackgroundMusic();
 }
 
 void Game3D::createPlatforms()
@@ -1118,13 +1121,18 @@ void Game3D::drawHUD()
     // Draw controls help
     glColor3f(0.8f, 0.8f, 0.8f);
     drawText(10, 120, "Controls:", GLUT_BITMAP_HELVETICA_12);
-    drawText(10, 100, "WASD/Arrow Keys: Move | SPACE: Jump", GLUT_BITMAP_HELVETICA_12);
+    drawText(10, 100, "WASD/Arrow Keys: Move | SPACE: Jump | M: Toggle Music", GLUT_BITMAP_HELVETICA_12);
     drawText(10, 80, "1-4: Toggle Animations (after collecting all items on platform)", GLUT_BITMAP_HELVETICA_12);
 
     glColor3f(0.7f, 0.9f, 1.0f);
     drawText(10, 55, "Camera: P=3rd Person | T=Top | V=Side | F=Front | C=Free Camera", GLUT_BITMAP_HELVETICA_12);
     drawText(10, 35, "Free Camera: I/K=Forward/Back | J/L=Left/Right | U/O=Up/Down", GLUT_BITMAP_HELVETICA_12);
     drawText(10, 15, "Mouse: Look around (in Free Camera mode only)", GLUT_BITMAP_HELVETICA_12);
+
+    // Draw music status
+    glColor3f(musicEnabled ? 0.0f : 1.0f, musicEnabled ? 1.0f : 0.3f, 0.0f);
+    std::string musicStatus = std::string("Music: ") + (musicEnabled ? "ON" : "OFF");
+    drawText(650, 580, musicStatus.c_str(), GLUT_BITMAP_HELVETICA_12);
 
     glEnable(GL_DEPTH_TEST);
     glPopMatrix();
@@ -1321,6 +1329,12 @@ void Game3D::handleKeyPress(unsigned char key)
             animatedObjects[3]->toggleAnimation();
         break;
 
+    // Toggle music
+    case 'm':
+    case 'M':
+        toggleMusic();
+        break;
+
     case 27: // ESC
         exit(0);
         break;
@@ -1378,4 +1392,41 @@ void Game3D::handleMouseMotion(int x, int y)
 
     lastX = x;
     lastY = y;
+}
+
+void Game3D::playBackgroundMusic()
+{
+    if (!musicEnabled)
+        return;
+
+    mciSendStringA("close BackgroundMusic", NULL, 0, NULL);
+
+    std::string musicPath = "..\\assets\\background_music.mp3";
+    std::string openCommand = "open \"" + musicPath + "\" type mpegvideo alias BackgroundMusic";
+    std::string playCommand = "play BackgroundMusic repeat";
+
+    if (mciSendStringA(openCommand.c_str(), NULL, 0, NULL) == 0)
+    {
+        mciSendStringA(playCommand.c_str(), NULL, 0, NULL);
+    }
+}
+
+void Game3D::stopBackgroundMusic()
+{
+    mciSendStringA("stop BackgroundMusic", NULL, 0, NULL);
+    mciSendStringA("close BackgroundMusic", NULL, 0, NULL);
+}
+
+void Game3D::toggleMusic()
+{
+    musicEnabled = !musicEnabled;
+
+    if (musicEnabled)
+    {
+        playBackgroundMusic();
+    }
+    else
+    {
+        stopBackgroundMusic();
+    }
 }

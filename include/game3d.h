@@ -5,6 +5,10 @@
 #include <vector>
 #include <cmath>
 #include <string>
+#include <windows.h>
+#include <mmsystem.h>
+
+#pragma comment(lib, "winmm.lib")
 
 class Player3D;
 class Platform3D;
@@ -196,6 +200,7 @@ private:
 
     bool keyStates[256];
     bool specialKeyStates[256];
+    bool musicEnabled;
 
     Game3D();
 
@@ -209,6 +214,10 @@ public:
     void drawHUD();
     void drawGameOver();
     void drawWinScreen();
+
+    void playBackgroundMusic();
+    void stopBackgroundMusic();
+    void toggleMusic();
 
     void handleKeyPress(unsigned char key);
     void handleKeyRelease(unsigned char key);

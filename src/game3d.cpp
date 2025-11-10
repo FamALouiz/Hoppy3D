@@ -121,7 +121,7 @@ void Player3D::update(float deltaTime, const std::vector<Platform3D *> &platform
         if (newPos.x > minX && newPos.x < maxX &&
             newPos.z > minZ && newPos.z < maxZ)
         {
-            if (position.y >= platBottom - size && position.y < platTop + size * 0.5f)
+            if (position.y < platTop && position.y > platBottom - size)
             {
                 collision = true;
                 break;
@@ -767,7 +767,7 @@ void Game3D::createCollectibles()
             float offsetZ = (i < 2 ? -0.3f : 0.3f);
 
             Vector3 pos(platPos.x + offsetX,
-                        platPos.y + platSize.y / 2 + 0.5f,
+                        platPos.y + platSize.y / 2 + 0.3f,
                         platPos.z + offsetZ);
 
             collectibles.push_back(new Collectible3D(pos, colors[p], p));

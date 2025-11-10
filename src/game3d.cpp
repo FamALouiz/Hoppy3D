@@ -105,7 +105,7 @@ void Player3D::update(float deltaTime, const std::vector<Platform3D *> &platform
     if (newPos.z > 4.7f)
         newPos.z = 4.7f;
 
-    bool collision = false;
+    bool horizontalCollision = false;
     for (auto platform : platforms)
     {
         Vector3 pPos = platform->getPosition();
@@ -115,23 +115,22 @@ void Player3D::update(float deltaTime, const std::vector<Platform3D *> &platform
         float maxX = pPos.x + pSize.x / 2 + size;
         float minZ = pPos.z - pSize.z / 2 - size;
         float maxZ = pPos.z + pSize.z / 2 + size;
-        float platTop = pPos.y + pSize.y / 2;
+
+        float platTop = pPos.y + pSize.y / 2 + 0.045f;
         float platBottom = pPos.y - pSize.y / 2;
 
         if (newPos.x > minX && newPos.x < maxX &&
             newPos.z > minZ && newPos.z < maxZ)
         {
-            // Only block horizontal movement if player is INSIDE the platform (not on top)
-            // Player is on top when position.y is at or slightly above platTop
-            if (position.y < platTop - 0.05f && position.y > platBottom - size)
+            if (position.y < platTop - 0.1f && position.y + size > platBottom)
             {
-                collision = true;
+                horizontalCollision = true;
                 break;
             }
         }
     }
 
-    if (!collision)
+    if (!horizontalCollision)
     {
         position.x = newPos.x;
         position.z = newPos.z;
@@ -139,17 +138,14 @@ void Player3D::update(float deltaTime, const std::vector<Platform3D *> &platform
 
     const float GRAVITY = -15.0f;
     velocityY += GRAVITY * deltaTime;
-
     position.y += velocityY * deltaTime;
 
-    bool onGround = false;
-
+    // Ground
     if (position.y <= 0)
     {
         position.y = 0;
         velocityY = 0;
         isJumping = false;
-        onGround = true;
     }
 
     for (auto platform : platforms)
@@ -161,22 +157,22 @@ void Player3D::update(float deltaTime, const std::vector<Platform3D *> &platform
         float maxX = pPos.x + pSize.x / 2;
         float minZ = pPos.z - pSize.z / 2;
         float maxZ = pPos.z + pSize.z / 2;
-        float platTop = pPos.y + pSize.y / 2;
+
+        float platTop = pPos.y + pSize.y / 2 + 0.045f;
         float platBottom = pPos.y - pSize.y / 2;
 
         if (position.x > minX && position.x < maxX &&
             position.z > minZ && position.z < maxZ)
         {
-            if (velocityY <= 0 && position.y >= platTop && position.y < platTop + 1.0f)
+            if (velocityY <= 0 && position.y >= platTop - 0.2f && position.y <= platTop + 0.5f)
             {
                 position.y = platTop;
                 velocityY = 0;
                 isJumping = false;
-                onGround = true;
             }
-            else if (velocityY > 0 && position.y < platBottom && position.y + velocityY * deltaTime >= platBottom)
+            else if (velocityY > 0 && position.y + size * 2 >= platBottom && position.y < platBottom)
             {
-                position.y = platBottom - 0.01f;
+                position.y = platBottom - size * 2 - 0.01f;
                 velocityY = 0;
             }
         }
@@ -307,7 +303,6 @@ void AnimatedObject3D::draw()
     glTranslatef(currentPosition.x, currentPosition.y, currentPosition.z);
     glScalef(scale, scale, scale);
 
-    // For color change animation, we need to apply the color to the entire object
     if (animType == ANIM_COLOR_CHANGE)
     {
         glColor3f(currentColor.r, currentColor.g, currentColor.b);
@@ -534,10 +529,6 @@ void AnimatedObject3D::update(float deltaTime)
     }
 }
 
-// ============================================================================
-// Camera3D Implementation
-// ============================================================================
-
 Camera3D::Camera3D() : mode(CAM_THIRD_PERSON), angleH(0), angleV(-20)
 {
     position = Vector3(0, 5, 10);
@@ -549,7 +540,6 @@ void Camera3D::apply()
 {
     if (mode == CAM_FREE)
     {
-        // Calculate look-at point based on camera angles
         float radH = angleH * M_PI / 180.0f;
         float radV = angleV * M_PI / 180.0f;
 
@@ -561,8 +551,6 @@ void Camera3D::apply()
     }
     else if (mode == CAM_THIRD_PERSON)
     {
-        // Third person camera follows player
-        // Position is already set by followPlayer()
         up = Vector3(0, 1, 0);
     }
     else if (mode == CAM_TOP)
@@ -601,7 +589,6 @@ void Camera3D::setMode(CameraMode newMode)
     }
     else if (mode == CAM_THIRD_PERSON)
     {
-        // Third person settings will be handled in followPlayer
         angleH = 0;
         angleV = -20;
     }
@@ -670,10 +657,6 @@ void Camera3D::followPlayer(Vector3 playerPos)
     }
 }
 
-// ============================================================================
-// Game3D Implementation
-// ============================================================================
-
 Game3D *Game3D::instance = nullptr;
 
 Game3D::Game3D() : player(nullptr), camera(nullptr), gameState(STATE_PLAYING),
@@ -685,7 +668,6 @@ Game3D::Game3D() : player(nullptr), camera(nullptr), gameState(STATE_PLAYING),
         totalPerPlatform[i] = 0;
     }
 
-    // Initialize key states
     for (int i = 0; i < 256; i++)
     {
         keyStates[i] = false;
@@ -903,7 +885,6 @@ void Game3D::checkCollections()
 
 void Game3D::drawGround()
 {
-    // Ground plane (1 primitive)
     glPushMatrix();
     glColor3f(0.2f, 0.25f, 0.15f); // Dark green
     glTranslatef(0, -0.01f, 0);
@@ -939,7 +920,6 @@ void Game3D::drawWalls()
 
     CameraMode camMode = camera->getMode();
 
-    // Back wall (don't draw in front view, but collision still works)
     if (camMode != CAM_FRONT)
     {
         glPushMatrix();
@@ -958,7 +938,6 @@ void Game3D::drawWalls()
     glutSolidCube(1.0);
     glPopMatrix();
 
-    // Right wall (don't draw in side view, but collision still works)
     if (camMode != CAM_SIDE)
     {
         glPushMatrix();
@@ -1207,7 +1186,6 @@ void Game3D::drawGameOver()
 
 void Game3D::handleKeyPress(unsigned char key)
 {
-    // Mark key as pressed
     if (key < 256)
         keyStates[key] = true;
 
@@ -1218,7 +1196,6 @@ void Game3D::handleKeyPress(unsigned char key)
 
     switch (key)
     {
-    // Movement keys are handled in update() via keyStates
     case 'w':
     case 'W':
     case 's':

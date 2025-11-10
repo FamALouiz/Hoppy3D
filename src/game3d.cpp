@@ -76,6 +76,49 @@ void Player3D::draw()
     glutSolidCube(1.0);
     glPopMatrix();
 
+    // Sword on back
+    glPushMatrix();
+    glTranslatef(0, size * 1.2f, -size * 0.3f); // Position behind the back
+    glRotatef(-30, 1, 0, 0);                    // Tilt for diagonal placement
+
+    // Sword blade (cylinder)
+    glPushMatrix();
+    glColor3f(0.7f, 0.7f, 0.75f); // Silver blade
+    glTranslatef(0, size * 0.5f, 0);
+    glRotatef(-90, 1, 0, 0);
+    GLUquadric *quad = gluNewQuadric();
+    gluCylinder(quad, size * 0.05f, size * 0.05f, size * 1.0f, 10, 10);
+    gluDeleteQuadric(quad);
+    glPopMatrix();
+
+    // Sword tip (cone)
+    glPushMatrix();
+    glColor3f(0.7f, 0.7f, 0.75f);
+    glTranslatef(0, size * 1.5f, 0);
+    glRotatef(-90, 1, 0, 0);
+    glutSolidCone(size * 0.05f, size * 0.2f, 10, 10);
+    glPopMatrix();
+
+    // Sword handle (cylinder)
+    glPushMatrix();
+    glColor3f(0.2f, 0.1f, 0.05f); // Dark brown handle
+    glTranslatef(0, size * 0.25f, 0);
+    glRotatef(-90, 1, 0, 0);
+    quad = gluNewQuadric();
+    gluCylinder(quad, size * 0.08f, size * 0.08f, size * 0.25f, 10, 10);
+    gluDeleteQuadric(quad);
+    glPopMatrix();
+
+    // Sword guard (flattened cube)
+    glPushMatrix();
+    glColor3f(0.6f, 0.5f, 0.2f); // Gold guard
+    glTranslatef(0, size * 0.5f, 0);
+    glScalef(size * 0.4f, size * 0.05f, size * 0.1f);
+    glutSolidCube(1.0);
+    glPopMatrix();
+
+    glPopMatrix();
+
     glPopMatrix();
 }
 

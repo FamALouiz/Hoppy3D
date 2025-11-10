@@ -732,6 +732,8 @@ void Game3D::destroy()
     if (instance)
     {
         instance->stopBackgroundMusic();
+        mciSendStringA("stop GameOverMusic", NULL, 0, NULL);
+        mciSendStringA("close GameOverMusic", NULL, 0, NULL);
         delete instance->player;
         for (auto p : instance->platforms)
             delete p;
@@ -867,6 +869,7 @@ void Game3D::update(float deltaTime)
         if (gameTime >= maxGameTime)
         {
             gameState = STATE_GAMEOVER;
+            playGameOverMusic();
             return;
         }
 
@@ -1417,16 +1420,46 @@ void Game3D::stopBackgroundMusic()
     mciSendStringA("close BackgroundMusic", NULL, 0, NULL);
 }
 
+void Game3D::playGameOverMusic()
+{
+    if (!musicEnabled)
+        return;
+
+    // Stop background music first
+    stopBackgroundMusic();
+
+    // Close any existing game over music
+    mciSendStringA("close GameOverMusic", NULL, 0, NULL);
+
+    std::string musicPath = "..\\assets\\sounds\\game-over.mp3";
+    std::string openCommand = "open \"" + musicPath + "\" type mpegvideo alias GameOverMusic";
+    std::string playCommand = "play GameOverMusic";
+
+    if (mciSendStringA(openCommand.c_str(), NULL, 0, NULL) == 0)
+    {
+        mciSendStringA(playCommand.c_str(), NULL, 0, NULL);
+    }
+}
+
 void Game3D::toggleMusic()
 {
     musicEnabled = !musicEnabled;
 
     if (musicEnabled)
     {
-        playBackgroundMusic();
+        if (gameState == STATE_GAMEOVER)
+        {
+            playGameOverMusic();
+        }
+        else
+        {
+            playBackgroundMusic();
+        }
     }
     else
     {
         stopBackgroundMusic();
+        mciSendStringA("stop GameOverMusic", NULL, 0, NULL);
+        mciSendStringA("close GameOverMusic", NULL, 0, NULL);
     }
 }

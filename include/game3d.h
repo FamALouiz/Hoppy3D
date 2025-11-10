@@ -217,6 +217,7 @@ public:
 
     void playBackgroundMusic();
     void stopBackgroundMusic();
+    void playGameOverMusic();
     void toggleMusic();
 
     void handleKeyPress(unsigned char key);

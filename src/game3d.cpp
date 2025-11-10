@@ -121,7 +121,9 @@ void Player3D::update(float deltaTime, const std::vector<Platform3D *> &platform
         if (newPos.x > minX && newPos.x < maxX &&
             newPos.z > minZ && newPos.z < maxZ)
         {
-            if (position.y < platTop && position.y > platBottom - size)
+            // Only block horizontal movement if player is INSIDE the platform (not on top)
+            // Player is on top when position.y is at or slightly above platTop
+            if (position.y < platTop - 0.05f && position.y > platBottom - size)
             {
                 collision = true;
                 break;
@@ -829,7 +831,7 @@ void Game3D::update(float deltaTime)
         camera->followPlayer(player->getPosition());
     }
 
-    if (gameState == STATE_PLAYING)
+    if (gameState == STATE_PLAYING || gameState == STATE_WON)
     {
         gameTime += deltaTime;
 
@@ -840,6 +842,15 @@ void Game3D::update(float deltaTime)
             return;
         }
 
+        // Update animated objects
+        for (auto obj : animatedObjects)
+        {
+            obj->update(deltaTime);
+        }
+    }
+
+    if (gameState == STATE_PLAYING)
+    {
         // Update collectibles
         for (auto c : collectibles)
         {
@@ -848,15 +859,6 @@ void Game3D::update(float deltaTime)
 
         // Check collections
         checkCollections();
-    }
-
-    // Update animated objects even when won
-    if (gameState == STATE_PLAYING || gameState == STATE_WON)
-    {
-        for (auto obj : animatedObjects)
-        {
-            obj->update(deltaTime);
-        }
     }
 }
 

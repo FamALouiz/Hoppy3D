@@ -121,7 +121,7 @@ void Player3D::update(float deltaTime, const std::vector<Platform3D *> &platform
         if (newPos.x > minX && newPos.x < maxX &&
             newPos.z > minZ && newPos.z < maxZ)
         {
-            if (position.y > platBottom && position.y < platTop)
+            if (position.y >= platBottom - size && position.y < platTop + size * 0.5f)
             {
                 collision = true;
                 break;
@@ -160,16 +160,22 @@ void Player3D::update(float deltaTime, const std::vector<Platform3D *> &platform
         float minZ = pPos.z - pSize.z / 2;
         float maxZ = pPos.z + pSize.z / 2;
         float platTop = pPos.y + pSize.y / 2;
+        float platBottom = pPos.y - pSize.y / 2;
 
         if (position.x > minX && position.x < maxX &&
             position.z > minZ && position.z < maxZ)
         {
-            if (velocityY <= 0 && position.y <= platTop && position.y > platTop - 0.5f)
+            if (velocityY <= 0 && position.y >= platTop && position.y < platTop + 1.0f)
             {
                 position.y = platTop;
                 velocityY = 0;
                 isJumping = false;
                 onGround = true;
+            }
+            else if (velocityY > 0 && position.y < platBottom && position.y + velocityY * deltaTime >= platBottom)
+            {
+                position.y = platBottom - 0.01f;
+                velocityY = 0;
             }
         }
     }
@@ -298,7 +304,12 @@ void AnimatedObject3D::draw()
     glPushMatrix();
     glTranslatef(currentPosition.x, currentPosition.y, currentPosition.z);
     glScalef(scale, scale, scale);
-    glColor3f(currentColor.r, currentColor.g, currentColor.b);
+
+    // For color change animation, we need to apply the color to the entire object
+    if (animType == ANIM_COLOR_CHANGE)
+    {
+        glColor3f(currentColor.r, currentColor.g, currentColor.b);
+    }
 
     switch (objectType)
     {
@@ -435,22 +446,27 @@ void AnimatedObject3D::drawPagoda()
 
 void AnimatedObject3D::drawDragon()
 {
+    // Get current color for this object (will change if color animation is active)
+    float r = (animType == ANIM_COLOR_CHANGE) ? currentColor.r : 0.8f;
+    float g = (animType == ANIM_COLOR_CHANGE) ? currentColor.g : 0.2f;
+    float b = (animType == ANIM_COLOR_CHANGE) ? currentColor.b : 0.2f;
+
     // Body (sphere)
     glPushMatrix();
-    glColor3f(0.8f, 0.2f, 0.2f);
+    glColor3f(r, g, b);
     glutSolidSphere(0.3, 20, 20);
     glPopMatrix();
 
     // Head (sphere)
     glPushMatrix();
-    glColor3f(0.85f, 0.25f, 0.25f);
+    glColor3f(r * 1.06f, g * 1.25f, b * 1.25f);
     glTranslatef(0, 0.15f, 0.35f);
     glutSolidSphere(0.2, 20, 20);
     glPopMatrix();
 
     // Snout (cone)
     glPushMatrix();
-    glColor3f(0.9f, 0.3f, 0.3f);
+    glColor3f(r * 1.13f, g * 1.5f, b * 1.5f);
     glTranslatef(0, 0.15f, 0.5f);
     glRotatef(90, 0, 1, 0);
     glutSolidCone(0.1, 0.15, 10, 10);
@@ -458,7 +474,7 @@ void AnimatedObject3D::drawDragon()
 
     // Wings (flattened cubes)
     glPushMatrix();
-    glColor3f(0.7f, 0.15f, 0.15f);
+    glColor3f(r * 0.88f, g * 0.75f, b * 0.75f);
     glTranslatef(-0.35f, 0.1f, 0);
     glRotatef(30, 0, 0, 1);
     glScalef(0.4f, 0.05f, 0.3f);
@@ -466,7 +482,7 @@ void AnimatedObject3D::drawDragon()
     glPopMatrix();
 
     glPushMatrix();
-    glColor3f(0.7f, 0.15f, 0.15f);
+    glColor3f(r * 0.88f, g * 0.75f, b * 0.75f);
     glTranslatef(0.35f, 0.1f, 0);
     glRotatef(-30, 0, 0, 1);
     glScalef(0.4f, 0.05f, 0.3f);
@@ -475,7 +491,7 @@ void AnimatedObject3D::drawDragon()
 
     // Tail (cone)
     glPushMatrix();
-    glColor3f(0.75f, 0.2f, 0.2f);
+    glColor3f(r * 0.94f, g, b);
     glTranslatef(0, 0, -0.3f);
     glRotatef(-90, 1, 0, 0);
     glutSolidCone(0.1, 0.4, 10, 10);
@@ -830,14 +846,17 @@ void Game3D::update(float deltaTime)
             c->update(deltaTime);
         }
 
-        // Update animated objects
+        // Check collections
+        checkCollections();
+    }
+
+    // Update animated objects even when won
+    if (gameState == STATE_PLAYING || gameState == STATE_WON)
+    {
         for (auto obj : animatedObjects)
         {
             obj->update(deltaTime);
         }
-
-        // Check collections
-        checkCollections();
     }
 }
 

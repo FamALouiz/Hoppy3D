@@ -734,6 +734,7 @@ void Game3D::destroy()
         instance->stopBackgroundMusic();
         mciSendStringA("stop GameOverMusic", NULL, 0, NULL);
         mciSendStringA("close GameOverMusic", NULL, 0, NULL);
+        mciSendStringA("close CoinSound", NULL, 0, NULL);
         delete instance->player;
         for (auto p : instance->platforms)
             delete p;
@@ -904,6 +905,9 @@ void Game3D::checkCollections()
         {
             c->collect();
             collectedPerPlatform[c->getPlatformId()]++;
+
+            // Play coin collection sound
+            playCoinSound();
 
             // Check if all collectibles on this platform are collected
             int platId = c->getPlatformId();
@@ -1434,6 +1438,21 @@ void Game3D::playGameOverMusic()
     std::string musicPath = "..\\assets\\sounds\\game-over.mp3";
     std::string openCommand = "open \"" + musicPath + "\" type mpegvideo alias GameOverMusic";
     std::string playCommand = "play GameOverMusic";
+
+    if (mciSendStringA(openCommand.c_str(), NULL, 0, NULL) == 0)
+    {
+        mciSendStringA(playCommand.c_str(), NULL, 0, NULL);
+    }
+}
+
+void Game3D::playCoinSound()
+{
+    // Close any existing coin sound to allow multiple coins to be collected rapidly
+    mciSendStringA("close CoinSound", NULL, 0, NULL);
+
+    std::string soundPath = "..\\assets\\sounds\\coin.mp3";
+    std::string openCommand = "open \"" + soundPath + "\" type mpegvideo alias CoinSound";
+    std::string playCommand = "play CoinSound";
 
     if (mciSendStringA(openCommand.c_str(), NULL, 0, NULL) == 0)
     {

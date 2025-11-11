@@ -1247,6 +1247,18 @@ void Game3D::handleKeyPress(unsigned char key)
     if (key < 256)
         keyStates[key] = true;
 
+    if (key == 27) // ESC
+    {
+        exit(0);
+        return;
+    }
+
+    if (key == 'm' || key == 'M')
+    {
+        toggleMusic();
+        return;
+    }
+
     float camSpeed = 0.3f;
 
     if (gameState != STATE_PLAYING && gameState != STATE_WON)
@@ -1335,16 +1347,6 @@ void Game3D::handleKeyPress(unsigned char key)
     case '4':
         if (animatedObjects[3]->isEnabled())
             animatedObjects[3]->toggleAnimation();
-        break;
-
-    // Toggle music
-    case 'm':
-    case 'M':
-        toggleMusic();
-        break;
-
-    case 27: // ESC
-        exit(0);
         break;
     }
 }

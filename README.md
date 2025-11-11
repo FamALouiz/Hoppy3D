@@ -135,6 +135,8 @@ make run
 
 The game window opens at 800x600 resolution.
 
+Note: Sound may not work on all systems.
+
 ## Controls
 
 ### Movement

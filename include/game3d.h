@@ -219,6 +219,7 @@ public:
     void stopBackgroundMusic();
     void playGameOverMusic();
     void playCoinSound();
+    void playJumpSound();
     void toggleMusic();
 
     void handleKeyPress(unsigned char key);

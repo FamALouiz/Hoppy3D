@@ -1268,6 +1268,7 @@ void Game3D::handleKeyPress(unsigned char key)
     // Jump
     case ' ':
         player->jump();
+        playJumpSound();
         break;
 
     // Camera movement (free camera)
@@ -1453,6 +1454,21 @@ void Game3D::playCoinSound()
     std::string soundPath = "..\\assets\\sounds\\coin.mp3";
     std::string openCommand = "open \"" + soundPath + "\" type mpegvideo alias CoinSound";
     std::string playCommand = "play CoinSound";
+
+    if (mciSendStringA(openCommand.c_str(), NULL, 0, NULL) == 0)
+    {
+        mciSendStringA(playCommand.c_str(), NULL, 0, NULL);
+    }
+}
+
+void Game3D::playJumpSound()
+{
+    // Close any existing jump sound to allow multiple jumps
+    mciSendStringA("close JumpSound", NULL, 0, NULL);
+
+    std::string soundPath = "..\\assets\\sounds\\ninja-jump.mp3";
+    std::string openCommand = "open \"" + soundPath + "\" type mpegvideo alias JumpSound";
+    std::string playCommand = "play JumpSound";
 
     if (mciSendStringA(openCommand.c_str(), NULL, 0, NULL) == 0)
     {

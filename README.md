@@ -1,41 +1,47 @@
-# Hoppy - 2D Platformer Game
+# Hoppy3D - Ancient Warriors 3D Collectibles Game
 
-A 2D platformer game built with OpenGL 2.1 and FreeGLUT featuring a knight character navigating through platforms, avoiding meteors and rising lava, collecting power-ups, and reaching the final gate to win.
+A 3D collectibles game built with OpenGL and FreeGLUT featuring a warrior character navigating through platforms, collecting items, and unlocking animated ancient artifacts within a time limit.
 
 ## Game Features
 
 ### Core Gameplay
 
-- **Player Character**: Animated knight sprite with idle, running, jumping, and hit animations
-- **Platform Generation**: Procedurally generated platforms with random sizes and textures
-- **Rising Lava**: Dynamic lava that rises over time, increasing difficulty
-- **Meteor System**: Falling meteors with rotation, collision detection, and warning indicators
-- **Gate System**: Final door that opens with an animation when the player reaches it with the super key
+- **Player Character**: 3D warrior model with sword on back, featuring smooth movement and rotation
+- **Platform System**: Four color-coded platforms (red, blue, green, yellow) with unique collectibles
+- **Time Limit Challenge**: Complete all collections before time runs out
+- **Multiple Camera Modes**: Switch between free camera, top view, side view, front view, and third-person perspective
+- **Ancient Artifacts**: Unlock animated objects by collecting all items on each platform
 
-### Power-ups & Collectibles
+### Collectibles
 
-- **Keys**: Collectible coins that track progress
-- **Super Key**: Special key that spawns the winning gate
-- **Shield**: Grants temporary invincibility
-- **Lava Freeze**: Temporarily stops lava from rising
+- **Torus Coins**: Colorful collectible items (4 per platform, 16 total)
+  - Animated with rotation and bobbing effects
+  - Color-coded to match their platform (red, blue, green, yellow)
+  - Collision detection with visual and audio feedback
 
-### Visual Features
+### Animated Ancient Artifacts
 
-- **Sprite-based Graphics**: Knight character, power-ups, and HUD elements
-- **Texture Support**: PNG textures loaded via stb_image
-- **Animations**: Smooth character animations, bobbing power-ups, rotating meteors, opening door
-- **Screen Backgrounds**: Custom backgrounds for start, win, and lose screens
-- **Visual Feedback**:
-  - Player invincibility flashing
-  - Red border warning system based on lava proximity (critical/warning/safe levels)
-  - Meteor warning indicators at screen top
-  - HUD with hearts, power-up timers, and key counter
+Each platform unlocks a unique animated artifact when all collectibles are gathered:
+
+- **Samurai Helmet** (Rotation Animation) - Continuously rotates around Y-axis
+- **Ninja Star** (Scaling Animation) - Pulses in size
+- **Pagoda Tower** (Transformation Animation) - Moves up and down
+- **Dragon** (Color Change Animation) - Cycles through color variations
+
+### 3D Graphics & Rendering
+
+- **3D Primitives**: Cubes, spheres, cones, cylinders, and tori for object construction
+- **Lighting System**: OpenGL lighting with ambient, diffuse, and specular components
+- **Depth Testing**: Proper 3D depth rendering
+- **Color Material**: Dynamic color changes for objects
+- **Grid Floor**: Patterned ground with visual grid
 
 ### Physics & Collision
 
-- **Physics Engine**: Custom physics system with gravity, velocity, and acceleration
-- **Collision Detection**: Rectangle and circle collision for different object types
-- **Platform Interaction**: Jump mechanics and ground detection
+- **3D Physics Engine**: Custom physics with gravity, velocity, and 3D movement
+- **Collision Detection**: Sphere-based collision for player and collectibles
+- **Platform Interaction**: Jump mechanics with platform landing and collision
+- **Boundary Detection**: Movement constraints within game arena
 
 ## Prerequisites
 
@@ -43,56 +49,59 @@ A 2D platformer game built with OpenGL 2.1 and FreeGLUT featuring a knight chara
 - Make (for building)
 - FreeGLUT (included in `lib/` and `bin/`)
 - OpenGL libraries (included with Windows)
-- stb_image header (included in `include/`)
+- Windows Multimedia Library (winmm.lib for sound)
 
 ## Project Structure
 
 ```
-Hoppy/
+Hoppy3D/
 ├── src/
-│   ├── main.cpp                    # Entry point
-│   ├── player.cpp                  # Player character logic
-│   ├── platform.cpp                # Platform objects
-│   ├── gate.cpp                    # Winning gate with door animation
-│   ├── meteor.cpp                  # Meteor objects with rotation
-│   ├── lava.cpp                    # Rising lava system
-│   ├── background.cpp              # Scrolling background
-│   ├── hud.cpp                     # Heads-up display
-│   ├── utils.cpp                   # Utility functions
-│   ├── game_window/
-│   │   ├── game_window.cpp         # Window management
-│   │   ├── game_screen.cpp         # Base screen class
-│   │   └── utils.cpp               # Window utilities
-│   ├── physics/
-│   │   └── objects.cpp             # Physics objects
-│   ├── generators/
-│   │   ├── platform_generator.cpp  # Platform generation
-│   │   ├── meteor_generator.cpp    # Meteor spawning
-│   │   ├── powerup_generator.cpp   # Power-up spawning
-│   │   ├── powerup_manager.cpp     # Active power-up management
-│   │   └── powerups/
-│   │       ├── key.cpp             # Collectible keys
-│   │       ├── super_key.cpp       # Special winning key
-│   │       ├── shield.cpp          # Shield power-up
-│   │       └── lava_freeze.cpp     # Lava freeze power-up
-│   └── screens/
-│       ├── start_screen.cpp        # Main menu screen
-│       ├── main_screen.cpp         # Game screen
-│       ├── win_screen.cpp          # Victory screen
-│       └── end_screen.cpp          # Game over screen
-├── include/                        # Header files
+│   ├── main.cpp                    # Entry point and GLUT initialization
+│   └── game3d.cpp                  # Main game logic and 3D rendering
+├── include/
+│   ├── game3d.h                    # Game classes and structures
+│   └── GL/                         # FreeGLUT headers
 ├── assets/
-│   ├── sprites/                    # PNG sprite sheets and textures
 │   ├── fonts/                      # Font resources
-│   ├── music/                      # Background music
-│   └── sounds/                     # Sound effects
+│   └── sounds/                     # Sound effects (WAV files)
 ├── lib/x64/                        # FreeGLUT library files
 ├── bin/x64/                        # FreeGLUT DLL
 ├── build/                          # Compiled object files (generated)
 ├── bin/                            # Executable output (generated)
 ├── Makefile                        # Build configuration
-└── .vscode/                        # VS Code configuration
+├── LICENSE                         # License file
+└── README.md                       # This file
 ```
+
+## Game Architecture
+
+### Core Classes
+
+- **Game3D**: Main game manager (singleton pattern)
+  - Manages game state (PLAYING, WON, GAMEOVER)
+  - Handles input and updates
+  - Coordinates all game objects
+- **Player3D**: 3D warrior character
+  - 3D model with body, head, arms, legs, and sword
+  - Movement in X and Z directions
+  - Jump mechanics with gravity
+  - Rotation based on movement direction
+- **Platform3D**: Colored platforms
+  - Four platforms arranged in game space
+  - Collision detection for player landing
+  - Color-coded to match collectibles
+- **Collectible3D**: Torus-shaped collectibles
+  - Animated rotation and bobbing
+  - Platform-specific tracking
+  - Collision detection with player
+- **AnimatedObject3D**: Ancient artifact models
+  - Four types: Samurai Helmet, Ninja Star, Pagoda, Dragon
+  - Four animation types: Rotation, Scaling, Transformation, Color Change
+  - Unlocked when platform collectibles are complete
+- **Camera3D**: Multi-mode camera system
+  - Free camera with mouse control
+  - Fixed views: Top, Side, Front
+  - Third-person follow camera
 
 ## Building the Project
 
@@ -108,20 +117,9 @@ make run
 # Clean build files
 make clean
 
-# Clean everything including binaries
-make distclean
-
 # Show help
 make help
 ```
-
-### Using VS Code
-
-1. **Build**: Press `Ctrl+Shift+B` or use Terminal → Run Build Task
-2. **Build and Run**: Press `Ctrl+Shift+T` (Run Test Task) and select "Build and Run"
-3. **Clean**: Run task "Clean Build" from the command palette
-
-The project uses automated builds with VS Code tasks configured in `.vscode/tasks.json`.
 
 ## Running the Application
 
@@ -129,36 +127,127 @@ After building, the executable will be in the `bin/` directory:
 
 ```bash
 # Run directly
-./bin/Hoppy.exe
+./bin/Hoppy3D.exe
 
 # Or using make
 make run
 ```
 
-The game starts in fullscreen mode by default (800x600 resolution).
+The game window opens at 800x600 resolution.
 
 ## Controls
 
-- **A / Left Arrow**: Move left
-- **D / Right Arrow**: Move right
-- **W / Up Arrow / Space**: Jump
-- **ESC**: Exit game / Quit
-- **Space**: Start game from menu
+### Movement
+
+- **W / Up Arrow**: Move forward (North)
+- **S / Down Arrow**: Move backward (South)
+- **A / Left Arrow**: Move left (West)
+- **D / Right Arrow**: Move right (East)
+- **Space**: Jump
+
+### Camera Controls
+
+- **1**: Free camera mode (mouse to look around)
+- **2**: Top view camera
+- **3**: Side view camera
+- **4**: Front view camera
+- **5**: Third-person camera (default)
+- **Mouse Movement** (Free camera mode): Rotate view
+
+### Game Controls
+
+- **M**: Toggle music on/off
+- **ESC**: Exit game
 
 ## Gameplay
 
-1. Navigate platforms by moving left/right and jumping
-2. Avoid falling meteors (watch for warning indicators at the top)
-3. Stay above the rising lava
-4. Collect keys and power-ups
-5. Find the super key to spawn the final gate
-6. Reach the gate to win
+### Objective
+
+Collect all 16 torus coins across the four platforms before time runs out to unlock all ancient artifacts and win the game.
+
+### How to Play
+
+1. **Navigate the Arena**: Use WASD or arrow keys to move your warrior character
+2. **Jump Between Platforms**: Press Space to jump and reach different platforms
+3. **Collect Torus Coins**: Walk over the rotating, bobbing coins to collect them
+   - Red coins on the red platform
+   - Blue coins on the blue platform
+   - Green coins on the green platform
+   - Yellow coins on the yellow platform
+4. **Unlock Artifacts**: Collect all 4 coins on a platform to unlock and animate its artifact
+   - Complete red platform → Samurai Helmet appears and rotates
+   - Complete blue platform → Ninja Star appears and pulses
+   - Complete green platform → Pagoda appears and moves up/down
+   - Complete yellow platform → Dragon appears and changes colors
+5. **Win Condition**: Collect all 16 coins before time runs out
+6. **Lose Condition**: Run out of time before collecting everything
+
+### Camera Tips
+
+- Use third-person mode (5) for normal gameplay
+- Switch to top view (2) to get your bearings
+- Try free camera (1) to explore the 3D models up close
+
+## Technical Features
+
+### 3D Rendering
+
+- **OpenGL Legacy (2.x)**: Fixed-function pipeline
+- **GLUT Primitives**: Spheres, cubes, cones, cylinders, tori
+- **Lighting Model**: Single light source with ambient, diffuse, and specular components
+- **Depth Buffer**: Proper 3D rendering with depth testing
+- **Perspective Projection**: 45° FOV with dynamic aspect ratio
+
+### Audio System
+
+- **Windows Multimedia API**: Background music and sound effects
+- **Sound Effects**: Coin collection sound (WAV format)
+- **Background Music**: Game music with toggle control
+
+### Physics
+
+- **Gravity**: Constant downward acceleration
+- **Velocity-based Movement**: Smooth character motion
+- **Platform Collision**: Landing detection on platforms
+- **Boundary Constraints**: Arena walls at -4.7 to 4.7 on X and Z axes
+
+## Game States
+
+1. **STATE_PLAYING**: Active gameplay
+
+   - Player can move and collect
+   - Timer counts down
+   - Animations active
+
+2. **STATE_WON**: Victory condition
+
+   - All collectibles gathered
+   - Victory music plays
+   - Win screen displays
+
+3. **STATE_GAMEOVER**: Defeat condition
+   - Time expired
+   - Game over music plays
+   - Lose screen displays
 
 ## Credits
 
-- FreeGLUT for OpenGL windowing
-- stb_image for PNG texture loading
-- OpenGL 2.1 for graphics rendering
+- **FreeGLUT**: OpenGL Utility Toolkit for window management and input
+- **OpenGL**: 3D graphics rendering
+- **GLU**: OpenGL Utility Library for quadrics and perspective
+- **Windows Multimedia API**: Audio playback system
+
+## Development
+
+Built as a graphics programming project demonstrating:
+
+- 3D modeling with primitives
+- Camera systems and view transformations
+- Lighting and shading
+- Animation systems
+- Collision detection in 3D
+- Game state management
+- Audio integration
 
 ## License
 
